@@ -43,7 +43,17 @@ export const userData = createSlice({
       state.currency1Value = action.payload;
     },
     setHistory: (state, action: PayloadAction<History>) => {
-      state.history.push(action.payload);
+      const alreadyExists = state.history.some(
+        history =>
+          history.convertedFrom === action.payload.convertedFrom &&
+          history.convertedFromAmount === action.payload.convertedFromAmount &&
+          history.convertedTo === action.payload.convertedTo &&
+          history.convertedToAmount === action.payload.convertedToAmount,
+      );
+
+      if (!alreadyExists) {
+        state.history.push(action.payload);
+      }
     },
   },
 });
