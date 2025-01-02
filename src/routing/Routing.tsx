@@ -5,6 +5,11 @@ import History from '../screens/History';
 
 const Stack = createNativeStackNavigator();
 
+export type RootStackParamList = {
+  home: undefined;
+  history: undefined;
+};
+
 const Routing = () => {
   return (
     <Stack.Navigator

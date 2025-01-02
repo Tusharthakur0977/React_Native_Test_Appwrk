@@ -26,7 +26,6 @@ const initialState: currencyCodeState = {
 
 const currencyCodeSlice = createSlice({
   name: 'currencyCode',
-  // `createSlice` will infer the state type from the `initialState` argument
   initialState,
   reducers: {},
   extraReducers: builder => {

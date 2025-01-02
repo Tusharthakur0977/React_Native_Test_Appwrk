@@ -1,7 +1,5 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-/* eslint-disable @typescript-eslint/no-shadow */
-/* eslint-disable @typescript-eslint/no-unused-vars */
-import React, {FC, useEffect, useState} from 'react';
+import React, {FC, useEffect, useMemo, useState} from 'react';
 import {StyleSheet, Text, TextInput, View} from 'react-native';
 import {Dropdown} from 'react-native-element-dropdown';
 import {fetchCurrencyData} from '../../redux/slices/fetchCurrencyData';
@@ -15,42 +13,48 @@ type CustomInputProps = {
   currency: string;
   setCurrency: (text: string) => void;
   isSecond?: boolean;
+  title: string;
 };
 
-const CustomInput: FC<CustomInputProps> = props => {
+const CustomInput: FC<CustomInputProps> = React.memo(props => {
   const {
     data,
     setValue,
-    value,
+    value = '',
     currency,
     setCurrency,
     isSecond = false,
+    title,
   } = props;
+
+  const [error, setError] = useState<string | null>(null);
   const dispatch = useAppDispatch();
-  const [isFocus, setIsFocus] = useState(false);
   const {data: currencyData} = useAppSelector(state => state.currecyData);
-  const {currency1Value, currency1, currency2, currency2Value} = useAppSelector(
+  const {currency1Value, currency1, currency2} = useAppSelector(
     state => state.userData,
   );
 
-  const renderItem = (item: any) => {
-    return (
-      <View style={{padding: 10}}>
-        <Text>{item[1]}</Text>
-      </View>
-    );
+  const validateAmount = (text: string) => {
+    if (!/^\d*\.?\d*$/.test(text)) {
+      setError('Please enter a valid number');
+    } else {
+      setError(null);
+      setValue && setValue(text);
+    }
   };
 
-  const filteredCurrecny =
-    currencyData &&
-    isSecond &&
-    Number(
-      Object.entries(currencyData?.conversion_rates)
-        .filter(([key]) => key === currency)
-        .flat(1)[1],
-    ) * Number(currency1Value);
+  const filteredCurrecny = useMemo(() => {
+    if (!currencyData || !isSecond) return 0;
+    const rate = Object.entries(currencyData?.conversion_rates).find(
+      ([key]) => key === currency,
+    )?.[1];
+    return rate ? Number(rate) * Number(currency1Value) : 0;
+  }, [currencyData, isSecond, currency, currency1Value]);
 
-  const showConvertedAmount = currency1 && currency1Value && currency2;
+  const showConvertedAmount = useMemo(
+    () => currency1 && currency1Value && currency2,
+    [currency1, currency1Value, currency2],
+  );
 
   useEffect(() => {
     if (value && currency) {
@@ -76,95 +80,81 @@ const CustomInput: FC<CustomInputProps> = props => {
     }
   }, [filteredCurrecny, showConvertedAmount]);
 
+  const renderItem = (item: any) => (
+    <View style={styles.itemContainer}>
+      <Text>{item[1]}</Text>
+    </View>
+  );
+
   return (
-    <View
-      style={{
-        padding: 10,
-        borderRadius: 20,
-        boxShadow: 'rgba(0, 0, 0, 0.24) 0px 3px 8px',
-        width: '90%',
-        gap: 30,
-      }}>
-      <View style={{gap: '10'}}>
+    <View style={styles.container}>
+      <Text style={styles.title}>{title}</Text>
+      <View style={styles.gap}>
         <Text>Select Currency</Text>
         {data && (
           <Dropdown
-            style={[styles.dropdown, isFocus && {borderColor: 'blue'}]}
+            style={styles.dropdown}
             placeholderStyle={styles.placeholderStyle}
             selectedTextStyle={styles.selectedTextStyle}
             data={data}
             renderItem={renderItem}
             maxHeight={300}
-            placeholder={currency ? currency : 'Select Currency'}
+            placeholder={currency || 'Select Currency'}
             value={currency}
-            onChange={item => {
-              setCurrency(item[0]);
-              setIsFocus(false);
-            }}
+            onChange={item => setCurrency(item[0])}
             labelField={0}
             valueField={0}
           />
         )}
       </View>
 
-      <View style={{gap: 10}}>
+      <View style={styles.gap}>
         {isSecond ? (
           showConvertedAmount && (
-            <View style={{gap: 20}}>
+            <View style={styles.gap}>
               <Text>Converted Rate</Text>
               <Text>{filteredCurrecny}</Text>
             </View>
           )
         ) : (
-          <View style={{gap: 20}}>
+          <View style={styles.gap}>
             <Text>Enter Amount</Text>
             <TextInput
               value={value}
-              onChangeText={text => setValue && setValue(text)}
+              onChangeText={validateAmount}
               placeholder="Enter Amount"
               keyboardType="number-pad"
-              style={{borderWidth: 0.5, borderColor: 'grey', padding: 10}}
+              style={styles.textInput}
+              accessibilityLabel="Amount Input"
             />
+            {error && <Text style={styles.errorText}>{error}</Text>}
           </View>
         )}
       </View>
     </View>
   );
-};
+});
 
 export default CustomInput;
 
 const styles = StyleSheet.create({
-  icon: {
-    marginRight: 5,
-  },
-  label: {
-    position: 'absolute',
-    backgroundColor: 'red',
-    left: 22,
-    top: 8,
-    zIndex: 999,
-    paddingHorizontal: 8,
-    fontSize: 14,
-  },
-  placeholderStyle: {
-    fontSize: 16,
-  },
-  selectedTextStyle: {
-    fontSize: 16,
-  },
-
-  button: {
-    alignItems: 'center',
-    backgroundColor: '#efefef',
-    height: 50,
+  container: {
+    padding: 20,
+    borderRadius: 15,
     width: '90%',
-    paddingHorizontal: 10,
-    zIndex: 1,
+    gap: 30,
+    backgroundColor: 'white',
+    boxShadow: 'rgba(0, 0, 0, 0.24) 0px 3px 5px',
   },
-  buttonText: {
-    flex: 1,
+  title: {
     textAlign: 'center',
+    fontWeight: 'bold',
+  },
+  gap: {
+    gap: 10,
+  },
+  itemContainer: {
+    padding: 10,
   },
   dropdown: {
     height: 50,
@@ -172,5 +162,21 @@ const styles = StyleSheet.create({
     borderWidth: 0.5,
     borderRadius: 8,
     paddingHorizontal: 8,
+  },
+  placeholderStyle: {
+    fontSize: 16,
+  },
+  selectedTextStyle: {
+    fontSize: 16,
+  },
+  textInput: {
+    borderWidth: 0.5,
+    borderColor: 'grey',
+    padding: 10,
+  },
+  errorText: {
+    color: 'red',
+    fontSize: 14,
+    marginTop: 5,
   },
 });

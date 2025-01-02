@@ -43,8 +43,6 @@ export const userData = createSlice({
       state.currency1Value = action.payload;
     },
     setHistory: (state, action: PayloadAction<History>) => {
-      console.log(action.payload, 'MMMM');
-
       state.history.push(action.payload);
     },
   },
