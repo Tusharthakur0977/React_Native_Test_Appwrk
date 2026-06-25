@@ -1,83 +1,43 @@
-This is a new [**React Native**](https://reactnative.dev) project, bootstrapped using [`@react-native-community/cli`](https://github.com/react-native-community/cli).
+# 🎧 Inscape Mobile App
 
-# Getting Started
+An advanced, feature-rich audio streaming and meditation application built with React Native. The app delivers a seamless listening experience with background audio playback, offline downloads, and smooth, gesture-driven interactions. 
 
->**Note**: Make sure you have completed the [React Native - Environment Setup](https://reactnative.dev/docs/environment-setup) instructions till "Creating a new application" step, before proceeding.
+Designed with modern architectural patterns and optimized for performance, this project demonstrates deep technical competency in mobile audio processing, state management, and animated user interfaces.
 
-## Step 1: Start the Metro Server
+## 🚀 Tech Stack
 
-First, you will need to start **Metro**, the JavaScript _bundler_ that ships _with_ React Native.
+- **Core:** React Native (0.78), React (19.0)
+- **State Management:** Redux Toolkit, Context API
+- **Navigation:** React Navigation v7 (Native Stack, Bottom Tabs)
+- **Audio Engine:** `react-native-track-player`
+- **Animations & UI:** `react-native-reanimated` (v3), `@react-native-community/blur`, `react-native-fast-image`
+- **Background Tasks & Notifications:** `@notifee/react-native`, `react-native-fs`, `react-native-file-access`
+- **Networking:** Axios
 
-To start Metro, run the following command from the _root_ of your React Native project:
+## ⭐ Spotlight Feature: Universal Track Player & Background Download Manager
 
-```bash
-# using npm
-npm start
+The most complex and technically demanding component of this application is the custom **UniversalTrackPlayer** combined with the background **PlayBackService**. Building a robust audio player in React Native requires bridging native iOS/Android audio capabilities while keeping the JavaScript thread perfectly synchronized for UI updates.
 
-# OR using Yarn
-yarn start
-```
+### How it works under the hood:
+1. **Background Audio Processing:** Leveraging `react-native-track-player`, the app continues playing audio even when minimized or the device is locked. It fully integrates with the OS-level media controls (lock screen player, headphone buttons), listening to events like `RemotePause`, `RemoteNext`, and `RemoteSeek` directly from native threads via `PlayBackService`.
+2. **Synchronous UI Animations:** The progress bar utilizes `react-native-reanimated` running on the UI thread. Instead of updating the progress bar state on the JS thread (which causes stuttering during heavy renders), it uses shared values and worklets to provide a buttery-smooth 60FPS seek bar that accurately reflects the exact audio position.
+3. **Resilient Background Downloading:** Users can download tracks for offline listening. This relies on `react-native-fs` for file management and `@notifee/react-native` to create dedicated background download channels. When a download is initiated, it triggers an OS-level notification that updates the download progress in real-time, independent of the app's foreground state.
 
-## Step 2: Start your Application
+### Technical Challenges Overcome:
+- **State Synchronization:** Keeping Redux state, Context API player state, and the native track player's internal state completely in sync without memory leaks or race conditions.
+- **Performance Optimization:** Handling large audio files and rapid scrub-seeking without blocking the JavaScript thread, achieved by pushing heavy lifting to the native side and using Reanimated for visual feedback.
+- **Offline Reliability:** Handling network interruptions during file downloads and gracefully managing filesystem paths across different Android/iOS sandboxes.
 
-Let Metro Bundler run in its _own_ terminal. Open a _new_ terminal from the _root_ of your React Native project. Run the following command to start your _Android_ or _iOS_ app:
+## 🛠 Features
 
-### For Android
+- **Full-Fledged Audio Player:** Play, pause, skip, seek, shuffle, and track playback history through a robust backend integration.
+- **Offline Mode:** Download tracks securely to the device's local storage and manage downloaded media through a dedicated library.
+- **Mini Player:** A persistent, universally accessible mini-player that hovers above bottom tabs across all screens.
+- **Secure Authentication:** Complete onboarding, login, sign-up, and OTP verification flows.
+- **Custom UI Components:** From custom accordions and modals to keyboard-avoiding views, built entirely from scratch to ensure pixel-perfect fidelity and smooth performance.
 
-```bash
-# using npm
-npm run android
+## 💡 Why This Project Stands Out
 
-# OR using Yarn
-yarn android
-```
+Building a reliable media playback application is notoriously tricky in React Native due to the asynchronous nature of the bridge and the strict background execution limits of iOS and Android. 
 
-### For iOS
-
-```bash
-# using npm
-npm run ios
-
-# OR using Yarn
-yarn ios
-```
-
-If everything is set up _correctly_, you should see your new app running in your _Android Emulator_ or _iOS Simulator_ shortly provided you have set up your emulator/simulator correctly.
-
-This is one way to run your app — you can also run it directly from within Android Studio and Xcode respectively.
-
-## Step 3: Modifying your App
-
-Now that you have successfully run the app, let's modify it.
-
-1. Open `App.tsx` in your text editor of choice and edit some lines.
-2. For **Android**: Press the <kbd>R</kbd> key twice or select **"Reload"** from the **Developer Menu** (<kbd>Ctrl</kbd> + <kbd>M</kbd> (on Window and Linux) or <kbd>Cmd ⌘</kbd> + <kbd>M</kbd> (on macOS)) to see your changes!
-
-   For **iOS**: Hit <kbd>Cmd ⌘</kbd> + <kbd>R</kbd> in your iOS Simulator to reload the app and see your changes!
-
-## Congratulations! :tada:
-
-You've successfully run and modified your React Native App. :partying_face:
-
-### Now what?
-
-- If you want to add this new React Native code to an existing application, check out the [Integration guide](https://reactnative.dev/docs/integration-with-existing-apps).
-- If you're curious to learn more about React Native, check out the [Introduction to React Native](https://reactnative.dev/docs/getting-started).
-
-# Troubleshooting
-
-If you can't get this to work, see the [Troubleshooting](https://reactnative.dev/docs/troubleshooting) page.
-
-# Learn More
-
-To learn more about React Native, take a look at the following resources:
-
-- [React Native Website](https://reactnative.dev) - learn more about React Native.
-- [Getting Started](https://reactnative.dev/docs/environment-setup) - an **overview** of React Native and how setup your environment.
-- [Learn the Basics](https://reactnative.dev/docs/getting-started) - a **guided tour** of the React Native **basics**.
-- [Blog](https://reactnative.dev/blog) - read the latest official React Native **Blog** posts.
-- [`@facebook/react-native`](https://github.com/facebook/react-native) - the Open Source; GitHub **repository** for React Native.
-
-
-API Used for fetching currency Data
-https://app.exchangerate-api.com/
+This project stands out because it doesn't just use a basic UI library; it orchestrates a complex symphony of native modules (audio engines, file systems, local notifications) to create an experience that feels truly native. By successfully implementing a background download manager with live progress notifications and an audio player that effortlessly handles interruptions, lock-screen controls, and fluid animations, this application proves a high level of engineering maturity and a deep understanding of mobile system architecture.
